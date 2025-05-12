@@ -26,3 +26,12 @@ pip install openai Pillow matplotlib
 ```bash
 python crop_with_gpt.py --image path/to/image.jpg --instruction "右上のリンゴ" --output cropped.jpg --api_key YOUR_API_KEY
 ```
+
+| 引数            | 説明                                          |
+|-----------------|-----------------------------------------------|
+| `--image`       | クロップ対象の画像パス（必須）                      |
+| `--instruction` | クロップ対象の自然言語による説明（必須）               |
+| `--output`      | クロップ画像の出力先パス（任意、デフォルト: `cropped.jpg`） |
+| `--api_key`     | OpenAI APIキー（環境変数でも指定可能）                |
+| `--debug`       | APIレスポンスや座標などの詳細ログを出力               |
+
