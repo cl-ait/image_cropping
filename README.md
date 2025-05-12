@@ -34,8 +34,7 @@ python cropping.py --image path/to/image.jpg --instruction "右上のリンゴ" 
 
 クロップ領域の座標と GPT による簡易説明も表示
 
-![出力例](<img width="1435" alt="スクリーンショット 2025-05-09 17 22 03" src="https://github.com/user-attachments/assets/83c18cf1-526d-4e7c-a0dc-f712f0f13aac" />
-)
+![出力例]( /Users/x22092xx/2025/nlp_2025/cropping/example.png)
 
 
 ## 日本語フォント対応について
