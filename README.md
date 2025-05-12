@@ -22,3 +22,4 @@
 pip install openai Pillow matplotlib
 ```
 
+## 使い方
