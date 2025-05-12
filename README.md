@@ -20,9 +20,6 @@
 
 ```bash
 pip install openai Pillow matplotlib
-```markdown
-## 使い方
 
-```bash
-python crop_with_gpt.py --image path/to/image.jpg --instruction "右上のリンゴ" --output cropped.jpg --api_key YOUR_API_KEY
+## 使い方
 
