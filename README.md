@@ -20,7 +20,7 @@
 
 ```bash
 pip install openai Pillow matplotlib
-
+```markdown
 ## 使い方
 
 ```bash
