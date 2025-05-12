@@ -1,4 +1,4 @@
-# GPT-4 Vision Image Cropper
+# GPT-4 Image Cropper
 
 このツールは、OpenAI の GPT-4 Vision モデルを活用して、指定された画像内の特定領域を自動でクロップ（切り抜き）する Python プログラムです。指示文（プロンプト）を入力するだけで、対象物の座標を取得し、クロップ画像を生成・表示します。
 
