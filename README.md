@@ -34,9 +34,6 @@ python cropping.py --image path/to/image.jpg --instruction "右上のリンゴ" 
 
 クロップ領域の座標と GPT による簡易説明も表示
 
-![出力例]( /Users/x22092xx/2025/nlp_2025/cropping/example.png)
-
-
 ## 日本語フォント対応について
 matplotlibで日本語を正しく表示するために、OSごとに最適なフォントを自動選択する仕組みが含まれています。
 
