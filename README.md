@@ -13,6 +13,8 @@
 - 日本語説明文にも対応（matplotlib用フォント設定済み）
 
 ---
+## 注意
+API Key を環境変数に設定してから、行ってください
 
 ## 必要なライブラリ
 
@@ -24,13 +26,13 @@ pip install openai Pillow matplotlib
 
 ## 使い方
 ```bash
-python cropping.py --image path/to/image.jpg --instruction "右上のリンゴ" --output cropped.jpg --api_key YOUR_API_KEY
+python cropping.py --image path/to/image.jpg --instruction "右上のリンゴ"
 ```
 
 ## 出力例
 入力画像に赤い枠でクロップ領域を表示
 
-元画像（左）と切り抜き画像（右）を並べて視覚的に表示
+元画像（左）と16:9に調整された切り抜き画像（右）を並べて視覚的に表示
 
 クロップ領域の座標と GPT による簡易説明も表示
 
