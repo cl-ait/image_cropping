@@ -81,7 +81,7 @@ python cropping.py --image kitchen.jpg --instruction "タマネギを微塵切�
 python cropping.py --image kitchen.jpg --instruction "タマネギを微塵切りにします。" --output result.jpg
 
 # 出力ディレクトリを指定
-python cropping.py --image ckitchen.jpg --instruction "タマネギを微塵切りにします。" --output_dir ./results
+python cropping.py --image kitchen.jpg --instruction "タマネギを微塵切りにします。" --output_dir ./results
 
 # API Keyをコマンドラインで指定する場合（非推奨）
 python cropping.py --image kitchen.jpg --instruction "タマネギを微塵切りにします。" --api_key "your-api-key-here"
