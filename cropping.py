@@ -452,7 +452,6 @@ def main():
     # コマンドライン引数の設定に以下を追加
     parser.add_argument('--output_dir', default='output', help='出力ディレクトリのパス（デフォルト: output）')
     parser.add_argument('--api_key', help='OpenAI APIキー（環境変数OPENAI_API_KEYでも設定可能）')
-    parser.add_argument('--debug', action='store_true', help='デバッグモードを有効化')
     
     args = parser.parse_args()
     
