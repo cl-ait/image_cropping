@@ -61,13 +61,17 @@ def japanese_fonts():
 
 def generate_output_filename(output_dir, base_name="cropped", extension="jpg"):
     """タイムスタンプ付きのファイル名を生成する"""
+    # 出力ディレクトリが存在しない場合は作成
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
+        print(f"出力ディレクトリを作成しました: {output_dir}")
+    
     # 現在の日時を取得
     now = datetime.datetime.now()
     timestamp = now.strftime("%Y%m%d_%H%M%S")
     
     # ファイル名を生成
     filename = f"{base_name}_{timestamp}.{extension}"
-    # return filename
     # フルパスを返す
     return os.path.join(output_dir, filename)
 
