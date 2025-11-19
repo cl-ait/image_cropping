@@ -37,7 +37,7 @@ pip install openai Pillow matplotlib
 ```
 
 ### API Key の設定
-#### 方法1: 環境変数で設定（推奨）
+
 環境変数にOpenAI API Keyを設定してください：
 
 ```bash
@@ -50,10 +50,7 @@ $env:OPENAI_API_KEY='your-api-key-here'
 # Windows (コマンドプロンプト)
 set OPENAI_API_KEY=your-api-key-here
 ```
-#### 方法2: コマンドラインオプションで指定
-```bash
-python cropping.py --image test.jpg --instruction "test" --api_key "your-api-key-here"
-```
+
 ---
 
 ## 使い方
@@ -78,13 +75,16 @@ python cropping.py --image path/to/image.jpg --instruction "タマネギを微�
 
 ```bash
 # 基本的な使用
-python cropping.py --image kitchen.jpg --instruction "フライパンで炒めている野菜"
+python cropping.py --image kitchen.jpg --instruction "タマネギを微塵切りにします。"
 
 # 出力先を指定
-python cropping.py --image food.jpg --instruction "皿に盛られた料理" --output result.jpg
+python cropping.py --image food.jpg --instruction "タマネギを微塵切りにします。" --output result.jpg
 
 # 出力ディレクトリを指定
-python cropping.py --image cooking.jpg --instruction "ボウルで混ぜる" --output_dir ./results
+python cropping.py --image cooking.jpg --instruction "タマネギを微塵切りにします。" --output_dir ./results
+
+# API Keyをコマンドラインで指定する場合（非推奨）
+python cropping.py --image test.jpg --instruction "タマネギを微塵切りにします。" --api_key "your-api-key-here"
 ```
 
 ---
