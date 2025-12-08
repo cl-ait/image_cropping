@@ -59,12 +59,33 @@ def japanese_fonts():
     except:
         print("フォントの設定に失敗しました。")
 
-def generate_output_filename(output_dir, base_name="cropped", extension="jpg"):
+# def generate_output_filename(output_dir, base_name="cropped", extension="jpg"):
+#     """タイムスタンプ付きのファイル名を生成する"""
+#     # 出力ディレクトリが存在しない場合は作成
+#     if not os.path.exists(output_dir):
+#         os.makedirs(output_dir)
+#         print(f"出力ディレクトリを作成しました: {output_dir}")
+    
+#     # 現在の日時を取得
+#     now = datetime.datetime.now()
+#     timestamp = now.strftime("%Y%m%d_%H%M%S")
+    
+#     # ファイル名を生成
+#     filename = f"{base_name}_{timestamp}.{extension}"
+#     # フルパスを返す
+#     return os.path.join(output_dir, filename)
+def generate_output_filename(output_dir, base_name="cropped", extension="jpg", input_image_path=None):
     """タイムスタンプ付きのファイル名を生成する"""
     # 出力ディレクトリが存在しない場合は作成
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
         print(f"出力ディレクトリを作成しました: {output_dir}")
+    
+    # 入力画像から拡張子を取得（指定されている場合）
+    if input_image_path:
+        input_ext = os.path.splitext(input_image_path)[1].lower()
+        if input_ext in ['.png', '.jpg', '.jpeg', '.gif', '.bmp']:
+            extension = input_ext[1:]  # ドットを除く
     
     # 現在の日時を取得
     now = datetime.datetime.now()
@@ -75,10 +96,22 @@ def generate_output_filename(output_dir, base_name="cropped", extension="jpg"):
     # フルパスを返す
     return os.path.join(output_dir, filename)
 
+# def encode_image_to_base64(image_path):
+#     """画像をbase64エンコードする"""
+#     with open(image_path, "rb") as image_file:
+#         return base64.b64encode(image_file.read()).decode('utf-8')
+    
 def encode_image_to_base64(image_path):
-    """画像をbase64エンコードする"""
+    """画像をbase64エンコードし、MIMEタイプも返す"""
+    with Image.open(image_path) as img:
+        # 画像形式を取得
+        image_format = img.format.lower()
+        mime_type = f"image/{image_format}" if image_format in ['jpeg', 'jpg', 'png', 'gif', 'webp'] else "image/jpeg"
+    
     with open(image_path, "rb") as image_file:
-        return base64.b64encode(image_file.read()).decode('utf-8')
+        base64_data = base64.b64encode(image_file.read()).decode('utf-8')
+    
+    return base64_data, mime_type
 
 def crop_image_with_gpt(image_path, instruction):
     """GPT-4 Vision APIを使用して画像からクロップ領域の座標を取得"""
@@ -92,8 +125,9 @@ def crop_image_with_gpt(image_path, instruction):
         img_width, img_height = img.size
     
     # 画像をbase64エンコード
-    base64_image = encode_image_to_base64(image_path)
-    
+    # base64_image = encode_image_to_base64(image_path)
+    # 画像をbase64エンコード（MIMEタイプも取得）
+    base64_image, mime_type = encode_image_to_base64(image_path)
     # システムプロンプトとユーザープロンプトを準備
     system_prompt = f"""
     あなたは料理画像解析の専門家です。
@@ -151,7 +185,7 @@ def crop_image_with_gpt(image_path, instruction):
                 "role": "user", 
                 "content": [
                     {"type": "text", "text": user_prompt},
-                    {"type": "image_url", "image_url": {"url": f"data:image/jpeg;base64,{base64_image}"}}
+                    {"type": "image_url", "image_url": {"url": f"data:{mime_type};base64,{base64_image}"}}
                 ]
             }
         ],
@@ -212,6 +246,8 @@ def crop_image_with_gpt(image_path, instruction):
 def crop_and_save_image(image_path, crop_coordinates, output_path, force_16_9_ratio=True):
     """画像をクロップして保存。16:9の比率にする"""
     with Image.open(image_path) as img:
+        # 元の画像形式を保存
+        original_format = img.format
         # 画像サイズを取得
         img_width, img_height = img.size
         print(f"元画像サイズ: {img_width}x{img_height}")
@@ -265,7 +301,29 @@ def crop_and_save_image(image_path, crop_coordinates, output_path, force_16_9_ra
         # クロップ
         try:
             cropped_img = img.crop((x_min, y_min, x_max, y_max))
-            cropped_img.save(output_path)
+            # 出力ファイルの拡張子を確認
+            output_ext = os.path.splitext(output_path)[1].lower()
+                        # JPEGで保存する場合、RGBモードに変換
+            if output_ext in ['.jpg', '.jpeg']:
+                if cropped_img.mode in ['P', 'RGBA', 'LA']:
+                    # パレットモードまたは透過チャンネルがある場合はRGBに変換
+                    print(f"画像モードを {cropped_img.mode} から RGB に変換します")
+                    # 白背景を作成して透過部分を処理
+                    if cropped_img.mode == 'P':
+                        cropped_img = cropped_img.convert('RGB')
+                    elif cropped_img.mode in ['RGBA', 'LA']:
+                        background = Image.new('RGB', cropped_img.size, (255, 255, 255))
+                        if cropped_img.mode == 'LA':
+                            cropped_img = cropped_img.convert('RGBA')
+                        background.paste(cropped_img, mask=cropped_img.split()[-1])
+                        cropped_img = background
+                cropped_img.save(output_path, 'JPEG', quality=95)
+            elif output_ext == '.png':
+                # PNGの場合はそのまま保存
+                cropped_img.save(output_path, 'PNG')
+            else:
+                # その他の形式
+                cropped_img.save(output_path)
             print(f"クロップした画像サイズ: {cropped_img.width}x{cropped_img.height}")
             return cropped_img, {"x_min": x_min, "y_min": y_min, "x_max": x_max, "y_max": y_max}
         except Exception as e:
@@ -385,11 +443,83 @@ def adjust_crop_to_exact_16_9_ratio(crop_coordinates, img_width, img_height):
         "y_max": new_y_max
     }
 
+# def display_results(original_image_path, cropped_image_path, crop_coordinates, description):
+#     """元画像とクロップした画像を表示し、座標情報を描画"""
+#     try:
+#         # 元画像を読み込み
+#         original_img = Image.open(original_image_path)
+#         original_draw = ImageDraw.Draw(original_img)
+        
+#         # クロップした領域を矩形で表示
+#         x_min = int(crop_coordinates["x_min"])
+#         y_min = int(crop_coordinates["y_min"])
+#         x_max = int(crop_coordinates["x_max"])
+#         y_max = int(crop_coordinates["y_max"])
+        
+#         # 赤い矩形を描画
+#         original_draw.rectangle([(x_min, y_min), (x_max, y_max)], outline="red", width=3)
+        
+#         # クロップした画像ファイルがあるか確認
+#         if not os.path.exists(cropped_image_path):
+#             print(f"警告: クロップ画像ファイル {cropped_image_path} が見つかりません")
+#             return
+            
+#         # クロップした画像を読み込み
+#         cropped_img = Image.open(cropped_image_path)
+#         if cropped_img.size == (0, 0):
+#             print("警告: クロップされた画像のサイズが0です")
+#             return
+            
+#         # 図を作成
+#         fig, axes = plt.subplots(1, 2, figsize=(15, 8))
+        
+#         # 元画像を表示
+#         axes[0].imshow(original_img)
+#         axes[0].set_title("Original Image with Crop Region")
+#         axes[0].axis('off')
+        
+#         # クロップした画像を表示
+#         axes[1].imshow(cropped_img)
+#         # 説明文はASCII文字のみにフォールバック
+#         safe_description = description
+#         try:
+#             # 日本語を含む説明文を表示
+#             axes[1].set_title(f"Cropped Image\n{description}", fontsize=12)
+#         except:
+#             # 文字化けする場合はASCII文字のみに
+#             safe_description = ''.join([c if ord(c) < 128 else '?' for c in description])
+#             axes[1].set_title(f"Cropped Image\n{safe_description}", fontsize=12)
+#         axes[1].axis('off')
+        
+#         # 座標情報を表示
+#         coordinate_text = f"Coordinates: ({x_min}, {y_min}) to ({x_max}, {y_max})"
+#         plt.figtext(0.5, 0.01, coordinate_text, ha="center", fontsize=12, bbox={"facecolor":"white", "alpha":0.5, "pad":5})
+        
+#         plt.tight_layout()
+#         plt.show()
+#     except Exception as e:
+#         print(f"結果表示中にエラーが発生しました: {e}")
+#         print("クロップ座標:", crop_coordinates)
+
 def display_results(original_image_path, cropped_image_path, crop_coordinates, description):
     """元画像とクロップした画像を表示し、座標情報を描画"""
     try:
         # 元画像を読み込み
         original_img = Image.open(original_image_path)
+        
+        # パレットモードの場合はRGBに変換してから描画
+        if original_img.mode in ['P', 'L']:
+            print(f"表示用に画像モードを {original_img.mode} から RGB に変換します")
+            original_img = original_img.convert('RGB')
+        elif original_img.mode in ['RGBA', 'LA']:
+            # 透過チャンネルがある場合は白背景でRGBに変換
+            background = Image.new('RGB', original_img.size, (255, 255, 255))
+            if original_img.mode == 'LA':
+                original_img = original_img.convert('RGBA')
+            background.paste(original_img, mask=original_img.split()[-1])
+            original_img = background
+        
+        # RGB変換後に描画オブジェクトを作成
         original_draw = ImageDraw.Draw(original_img)
         
         # クロップした領域を矩形で表示
@@ -411,6 +541,16 @@ def display_results(original_image_path, cropped_image_path, crop_coordinates, d
         if cropped_img.size == (0, 0):
             print("警告: クロップされた画像のサイズが0です")
             return
+        
+        # クロップ画像もRGBに変換（表示用）
+        if cropped_img.mode in ['P', 'L']:
+            cropped_img = cropped_img.convert('RGB')
+        elif cropped_img.mode in ['RGBA', 'LA']:
+            background = Image.new('RGB', cropped_img.size, (255, 255, 255))
+            if cropped_img.mode == 'LA':
+                cropped_img = cropped_img.convert('RGBA')
+            background.paste(cropped_img, mask=cropped_img.split()[-1])
+            cropped_img = background
             
         # 図を作成
         fig, axes = plt.subplots(1, 2, figsize=(15, 8))
@@ -515,11 +655,14 @@ def main():
     if args.output:
         output_filename = args.output
     else:
-        # 自動でタイムスタンプ付きファイル名を生成（指定されたディレクトリに）
-        output_filename = generate_output_filename(output_dir=args.output_dir)
+        # 自動でタイムスタンプ付きファイル名を生成（入力画像の拡張子を保持）
+        output_filename = generate_output_filename(
+            output_dir=args.output_dir,
+            input_image_path=args.image
+        )
     
     # 画像をクロップして保存
-    cropped_img = crop_and_save_image(args.image, result['crop_coordinates'], output_filename)
+    cropped_img, final_coords = crop_and_save_image(args.image, result['crop_coordinates'], output_filename)
     
     if cropped_img:
         print(f"クロップした画像を保存しました: {output_filename}")
