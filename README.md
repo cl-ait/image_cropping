@@ -70,6 +70,7 @@ python cropping.py --image path/to/image.jpg --instruction "タマネギを微�
 | `--output` | 出力ファイルのパス | タイムスタンプ付き自動生成 |
 | `--output_dir` | 出力ディレクトリ | `output` |
 | `--api_key` | OpenAI API Key（コマンドラインで指定） | 環境変数 `OPENAI_API_KEY` から取得 |
+| `--resize_height` | クロップ後の画像の高さ（px）。16:9の比率を維持してリサイズ。0を指定するとリサイズしない | `120` |
 
 ### 使用例
 
@@ -85,6 +86,12 @@ python cropping.py --image kitchen.jpg --instruction "タマネギを微塵切�
 
 # API Keyをコマンドラインで指定する場合（非推奨）
 python cropping.py --image kitchen.jpg --instruction "タマネギを微塵切りにします。" --api_key "your-api-key-here"
+
+# リサイズしない場合
+python cropping.py --image kitchen.jpg --instruction "タマネギを微塵切りにします。" --resize_height 0
+
+# 高さ240pxにリサイズ
+python cropping.py --image kitchen.jpg --instruction "タマネギを微塵切りにします。" --resize_height 240
 ```
 
 ---
