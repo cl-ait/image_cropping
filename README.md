@@ -70,7 +70,8 @@ python cropping.py --image path/to/image.jpg --instruction "タマネギを微�
 | `--output` | 出力ファイルのパス | タイムスタンプ付き自動生成 |
 | `--output_dir` | 出力ディレクトリ | `output` |
 | `--api_key` | OpenAI API Key（コマンドラインで指定） | 環境変数 `OPENAI_API_KEY` から取得 |
-| `--resize_height` | クロップ後の画像の高さ（px）。16:9の比率を維持してリサイズ。0を指定するとリサイズしない | `120` |
+| `--resize_width` | クロップ後の画像の幅（px）。16:9の比率を維持してリサイズ。0を指定するとリサイズしない | `0`（リサイズなし） |
+| `--resize_height` | クロップ後の画像の高さ（px）。16:9の比率を維持してリサイズ。widthとheightの両方が指定された場合はwidthが優先される | `0`（リサイズなし） |
 
 ### 使用例
 
@@ -87,12 +88,19 @@ python cropping.py --image kitchen.jpg --instruction "タマネギを微塵切�
 # API Keyをコマンドラインで指定する場合（非推奨）
 python cropping.py --image kitchen.jpg --instruction "タマネギを微塵切りにします。" --api_key "your-api-key-here"
 
-# リサイズしない場合
-python cropping.py --image kitchen.jpg --instruction "タマネギを微塵切りにします。" --resize_height 0
+# 幅640pxにリサイズ（高さは自動計算）
+python cropping.py --image kitchen.jpg --instruction "タマネギを微塵切りにします。" --resize_width 640
 
-# 高さ240pxにリサイズ
+# 高さ240pxにリサイズ（幅は自動計算）
 python cropping.py --image kitchen.jpg --instruction "タマネギを微塵切りにします。" --resize_height 240
+
 ```
+
+### リサイズについて
+
+- デフォルトではリサイズは行わず、クロップした画像をそのままのサイズで保存します
+- `--resize_width` または `--resize_height` を指定すると、16:9の比率を維持したままリサイズされます
+- 両方指定した場合は `--resize_width` が優先されます
 
 ---
 

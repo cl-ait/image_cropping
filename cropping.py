@@ -221,7 +221,7 @@ def crop_image_with_gpt(image_path, instruction):
             print(response_text)
             return None
         
-def crop_and_save_image(image_path, crop_coordinates, output_path, force_16_9_ratio=True, resize_to_height=None):
+def crop_and_save_image(image_path, crop_coordinates, output_path, force_16_9_ratio=True, resize_width=None, resize_height=None):
     """画像をクロップして保存。16:9の比率にし、オプションで高さをリサイズ"""
     with Image.open(image_path) as img:
         # 元の画像形式を保存
@@ -280,12 +280,17 @@ def crop_and_save_image(image_path, crop_coordinates, output_path, force_16_9_ra
         try:
             cropped_img = img.crop((x_min, y_min, x_max, y_max))
             
-            # リサイズが指定されている場合
-            if resize_to_height:
-                print(f"\n高さ{resize_to_height}pxにリサイズします...")
-                target_width = int(resize_to_height * 16 / 9)
-                cropped_img = cropped_img.resize((target_width, resize_to_height), Image.Resampling.LANCZOS)
-                print(f"リサイズ後のサイズ: {target_width}x{resize_to_height}")
+            # リサイズ処理（幅優先）
+            if resize_width and resize_width > 0:
+                print(f"\n幅{resize_width}pxにリサイズします...")
+                target_height = int(resize_width * 9 / 16)
+                cropped_img = cropped_img.resize((resize_width, target_height), Image.Resampling.LANCZOS)
+                print(f"リサイズ後のサイズ: {resize_width}x{target_height}")
+            elif resize_height and resize_height > 0:
+                print(f"\n高さ{resize_height}pxにリサイズします...")
+                target_width = int(resize_height * 16 / 9)
+                cropped_img = cropped_img.resize((target_width, resize_height), Image.Resampling.LANCZOS)
+                print(f"リサイズ後のサイズ: {target_width}x{resize_height}")
             
             # 出力ファイルの拡張子を確認
             output_ext = os.path.splitext(output_path)[1].lower()
@@ -564,7 +569,8 @@ def main():
 
     parser.add_argument('--output_dir', default='output', help='出力ディレクトリのパス（デフォルト: output）')
     parser.add_argument('--api_key', help='OpenAI APIキー（環境変数OPENAI_API_KEYでも設定可能）')
-    parser.add_argument('--resize_height', type=int, default=120, help='クロップ後の画像の高さ(px)。16:9の比率を維持します(デフォルト: 120)')
+    parser.add_argument('--resize_width', type=int, default=0, help='クロップ後の画像の幅(px)。16:9の比率を維持してリサイズ。0の場合はリサイズしない(デフォルト: 0)')
+    parser.add_argument('--resize_height', type=int, default=0, help='クロップ後の画像の高さ(px)。16:9の比率を維持してリサイズ。widthとheightの両方が指定された場合はwidthが優先される(デフォルト: 0)')
     args = parser.parse_args()
     
     # 日本語フォントのセットアップ
@@ -638,13 +644,14 @@ def main():
         args.image, 
         result['crop_coordinates'], 
         output_filename,
-        resize_to_height=args.resize_height
+        resize_width=args.resize_width,
+        resize_height=args.resize_height
     )
     
     if cropped_img:
         print(f"クロップした画像を保存しました: {output_filename}")
         
-        # 結果を表示（GPTが返した元の座標を使用）
+        # 結果を表示（GPTが返した元の座標）
         display_results(args.image, output_filename, result['crop_coordinates'], description)  # ← final_coords ではなく result['crop_coordinates'] を渡す
     else:
         print("クロッピング処理に失敗しました。")
